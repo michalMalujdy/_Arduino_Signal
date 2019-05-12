@@ -1,17 +1,19 @@
 #include <ArduinoJson.h>
 
 #define SENSOR_PIN 12
+#define BUFFER_SIZE 3
+#define END_OF_MESSAGE_SUFFIX "!%"
 
 struct Reading {
   String DeviceId;
   float Value;
 };
 
-Reading* readings = new Reading[10];
+Reading* readingsBuffer = new Reading[BUFFER_SIZE];
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(SENSOR_PIN, INPUT);
 }
 
@@ -20,50 +22,48 @@ void loop() {
   delay(200);
   
   // read all the values and store them in an array
-  readings[0] = 
+  readingsBuffer[0] = 
   {
     "device1",
     11.1
   };
 
-  readings[1] = 
+  readingsBuffer[1] = 
   {
     "device2",
     22.22
   };
 
-  readings[2] = 
+  readingsBuffer[2] = 
   {
     "device3",
     333.3
   };
 
   // Serialize the array to a json string
-  String payload = CreatePayload(readings);
+  String message = CreatePayload(readingsBuffer) + END_OF_MESSAGE_SUFFIX;
 
   // Send the json string via serial
-  Serial.print(payload);
-  Serial.println();
+  Serial.print(message);
 }
 
-String CreatePayload(Reading* readingsToSend)
+String CreatePayload(Reading* readings)
 {
     DynamicJsonBuffer JSONbuffer;
     JsonObject& root = JSONbuffer.createObject();
-    JsonArray& arr = JSONbuffer.createArray();
-    
-    JsonObject& obj1 = JSONbuffer.createObject();
-    obj1["DeviceId"] = "device1";
-    obj1["Value"] = 12.2;
-    
-    JsonObject& obj2 = JSONbuffer.createObject();
-    obj2["DeviceId"] = "device2";
-    obj2["Value"] = 1;
-    
-    arr.add(obj1);
-    arr.add(obj2);
+    JsonArray& readingsJsonArray = JSONbuffer.createArray();
 
-    root["Readings"] = arr;
+    for(int i = 0; i < BUFFER_SIZE; i++)
+    {
+      JsonObject& readingJsonObj = JSONbuffer.createObject();
+
+      readingJsonObj["DeviceId"] = readings[i].DeviceId;
+      readingJsonObj["Value"] = readings[i].Value;
+
+      readingsJsonArray.add(readingJsonObj);
+    }
+
+    root["Readings"] = readingsJsonArray;
 
     String json;
     root.printTo(json);
