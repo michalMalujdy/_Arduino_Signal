@@ -1,20 +1,29 @@
 #include <ArduinoJson.h>
 
-#define SENSOR_PIN 12
-#define BUFFER_SIZE 3
+#define POLOLU_GPY_PIN 12
+#define SENSORS_NUMBER 1
 #define END_OF_MESSAGE_SUFFIX "!%"
+
+struct Sensor {
+  String Id;
+  int Pin;
+};
+
+Sensor* sensors = new Sensor[SENSORS_NUMBER];
 
 struct Reading {
   String DeviceId;
   float Value;
 };
 
-Reading* readingsBuffer = new Reading[BUFFER_SIZE];
+Reading* readings = new Reading[SENSORS_NUMBER];
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  pinMode(SENSOR_PIN, INPUT);
+  Serial.begin(9600);
+
+  sensors[0] = { "pololu_gp2y0d815z0f", 12 };
+  
+  SetupInputPins();
 }
 
 void loop() {
@@ -22,29 +31,30 @@ void loop() {
   delay(200);
   
   // read all the values and store them in an array
-  readingsBuffer[0] = 
-  {
-    "device1",
-    11.1
-  };
-
-  readingsBuffer[1] = 
-  {
-    "device2",
-    22.22
-  };
-
-  readingsBuffer[2] = 
-  {
-    "device3",
-    333.3
-  };
+  ReadAllInputs();
 
   // Serialize the array to a json string
-  String message = CreatePayload(readingsBuffer) + END_OF_MESSAGE_SUFFIX;
+  String message = CreatePayload(readings) + END_OF_MESSAGE_SUFFIX;
 
   // Send the json string via serial
   Serial.print(message);
+}
+
+void SetupInputPins()
+{
+  for (int i = 0; i < SENSORS_NUMBER; i++)
+  {
+    pinMode(sensors[i].Pin, INPUT);
+  }
+}
+
+Reading* ReadAllInputs()
+{
+  for (int i = 0; i < SENSORS_NUMBER; i++)
+  {
+    readings[i].DeviceId = sensors[i].Id;
+    readings[i].Value = digitalRead(sensors[i].Pin);
+  }
 }
 
 String CreatePayload(Reading* readings)
@@ -53,7 +63,7 @@ String CreatePayload(Reading* readings)
     JsonObject& root = JSONbuffer.createObject();
     JsonArray& readingsJsonArray = JSONbuffer.createArray();
 
-    for(int i = 0; i < BUFFER_SIZE; i++)
+    for(int i = 0; i < SENSORS_NUMBER; i++)
     {
       JsonObject& readingJsonObj = JSONbuffer.createObject();
 
