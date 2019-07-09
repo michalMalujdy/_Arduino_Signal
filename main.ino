@@ -1,15 +1,12 @@
+#include "libs/irs05b.h"
+#include "libs/Sensor.h"
+
 #include <ArduinoJson.h>
 
-#define POLOLU_GPY_PIN 12
-#define SENSORS_NUMBER 1
 #define END_OF_MESSAGE_SUFFIX "!%"
+#define SENSORS_NUMBER 1
 
-struct Sensor {
-  String Id;
-  int Pin;
-};
-
-Sensor* sensors = new Sensor[SENSORS_NUMBER];
+Sensor** sensors = new Sensor*[SENSORS_NUMBER];
 
 struct Reading {
   String DeviceId;
@@ -21,13 +18,11 @@ Reading* readings = new Reading[SENSORS_NUMBER];
 void setup() {
   Serial.begin(9600);
 
-  sensors[0] = { "pololu_gp2y0d815z0f", 12 };
-  
-  SetupInputPins();
+  SetupSensors();
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop() 
+{
   delay(200);
   
   // read all the values and store them in an array
@@ -40,20 +35,22 @@ void loop() {
   Serial.print(message);
 }
 
-void SetupInputPins()
+void SetupSensors()
 {
+  sensors[0] = new Irs05b();
+
   for (int i = 0; i < SENSORS_NUMBER; i++)
   {
-    pinMode(sensors[i].Pin, INPUT);
+    sensors[i]->Init(String("pololu_irs05b"));
   }
 }
 
-Reading* ReadAllInputs()
+void ReadAllInputs()
 {
   for (int i = 0; i < SENSORS_NUMBER; i++)
   {
-    readings[i].DeviceId = sensors[i].Id;
-    readings[i].Value = digitalRead(sensors[i].Pin);
+    readings[i].DeviceId = sensors[i]->Id;
+    readings[i].Value = sensors[i]->Read();
   }
 }
 
