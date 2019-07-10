@@ -4,11 +4,9 @@
 class Sensor
 {
     public:
-    String Id;
 
-    Sensor(){};
-
-    virtual void Init(String id) = 0;
+    virtual String GetId() = 0;
+    virtual void Init() = 0;
     virtual int Read() = 0;
 };
 

@@ -3,21 +3,17 @@
 
 #include "Sensor.h"
 
-#define PIN_NR 12
-
 class Irs05b : public Sensor
 {
     public:
 
-    Irs05b()
+    String GetId()
     {
+        return _id;
+    }
 
-    };
-
-    void Init(String id)
+    void Init()
     {
-        Id = id;
-        _pinNumber = PIN_NR;
         pinMode(_pinNumber, INPUT);
     };   
 
@@ -27,7 +23,8 @@ class Irs05b : public Sensor
     };
 
     private:
-    int _pinNumber;
+    String _id = "pololu_irs05b";
+    int _pinNumber = 12;
 };
 
 #endif

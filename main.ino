@@ -1,10 +1,11 @@
 #include "libs/irs05b.h"
 #include "libs/Sensor.h"
+#include "libs/irs09a.h"
 
 #include <ArduinoJson.h>
 
 #define END_OF_MESSAGE_SUFFIX "!%"
-#define SENSORS_NUMBER 1
+#define SENSORS_NUMBER 2
 
 Sensor** sensors = new Sensor*[SENSORS_NUMBER];
 
@@ -17,7 +18,6 @@ Reading* readings = new Reading[SENSORS_NUMBER];
 
 void setup() {
   Serial.begin(9600);
-
   SetupSensors();
 }
 
@@ -38,10 +38,11 @@ void loop()
 void SetupSensors()
 {
   sensors[0] = new Irs05b();
+  sensors[1] = new Irs09a();
 
   for (int i = 0; i < SENSORS_NUMBER; i++)
   {
-    sensors[i]->Init(String("pololu_irs05b"));
+    sensors[i]->Init();
   }
 }
 
@@ -49,7 +50,7 @@ void ReadAllInputs()
 {
   for (int i = 0; i < SENSORS_NUMBER; i++)
   {
-    readings[i].DeviceId = sensors[i]->Id;
+    readings[i].DeviceId = sensors[i]->GetId();
     readings[i].Value = sensors[i]->Read();
   }
 }
