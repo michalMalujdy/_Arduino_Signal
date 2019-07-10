@@ -1,11 +1,12 @@
-#include "libs/irs05b.h"
 #include "libs/Sensor.h"
+#include "libs/irs05b.h"
+#include "libs/sds01a.h"
 #include "libs/irs09a.h"
 
 #include <ArduinoJson.h>
 
 #define END_OF_MESSAGE_SUFFIX "!%"
-#define SENSORS_NUMBER 2
+#define SENSORS_NUMBER 3
 
 Sensor** sensors = new Sensor*[SENSORS_NUMBER];
 
@@ -38,7 +39,8 @@ void loop()
 void SetupSensors()
 {
   sensors[0] = new Irs05b();
-  sensors[1] = new Irs09a();
+  sensors[1] = new Sds01a();
+  sensors[2] = new Irs09a();
 
   for (int i = 0; i < SENSORS_NUMBER; i++)
   {
