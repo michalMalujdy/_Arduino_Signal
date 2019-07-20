@@ -2,8 +2,8 @@
 #define IRS09A
 
 #include "Sensor.h"
+#include "VL6180X.h"
 #include <Wire.h>
-#include <VL6180X.h>
 
 class Irs09a : public Sensor
 {
